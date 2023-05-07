@@ -28,9 +28,10 @@ const fs = require('fs/promises');
 
   const renameFile = async (oldPath, newPath) => {
     try {
-      console.log(`rename ${oldPath} to ${newPath}`)
+      console.log(`renamed ${oldPath} to ${newPath}`)
       const existingFileHandle = await fs.rename(oldPath, newPath);
       existingFileHandle.close();
+      console.log('fileHandlerClosed')
     } catch (e) {
       console.log('we dont have a file, nothing to rename')
     }
@@ -39,7 +40,7 @@ const fs = require('fs/promises');
   const addToFile = async (path, content) => {
     try {
       const existingFileHandle = await fs.open(path, 'w');
-
+      existingFileHandle.writeFile(content)
       existingFileHandle.close();
     } catch (e) {
       console.log(`${path} does not exist, unable to write ${content}`);
@@ -70,7 +71,8 @@ const fs = require('fs/promises');
         // always want to reaad the whole contents beginning to end
         await commandFileHandler.read(buff, offset, length, position);
 
-        const command = buff.toString('utf-8')
+        const command = buff.toString('utf-8');
+        console.log('current change:')
         console.log(buff.toString('utf8'));
         // create a file
         // create a file <path>
@@ -93,9 +95,9 @@ const fs = require('fs/promises');
         }
 
         if(command.includes(ADD_TO_FILE)) {
-          const idx = command.indexOf(' this ')
+          const idx = command.indexOf(' content: ')
           const filePath = command.substring(ADD_TO_FILE.length + 1, idx);
-          const content = command.substring(idx + 6)
+          const content = command.substring(idx + 10)
           addToFile(filePath, content);
         }
   })

@@ -1,1 +1,1 @@
-rename the file text2.txt to text.txt
+add to the file text.txt content: hi
