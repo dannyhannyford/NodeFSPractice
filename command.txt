@@ -1,1 +1,1 @@
-create a file text.txt
+rename the file text2.txt to text.txt

@@ -14,11 +14,43 @@ const fs = require('fs/promises');
       console.log('a new file has been created');
       newFileHandle.close();
     }
+  }
 
+  const deleteFile = async (path) => {
+    try {
+      const deleteFileHandle = await fs.unlink(path);
+      console.log(`deleting ${path}...`);
+      deleteFileHandle.close();
+    } catch (e) {
+      console.log(`the file ${path} doesn't exist`)
+    }
+  }
+
+  const renameFile = async (oldPath, newPath) => {
+    try {
+      console.log(`rename ${oldPath} to ${newPath}`)
+      const existingFileHandle = await fs.rename(oldPath, newPath);
+      existingFileHandle.close();
+    } catch (e) {
+      console.log('we dont have a file, nothing to rename')
+    }
+  }
+
+  const addToFile = async (path, content) => {
+    try {
+      const existingFileHandle = await fs.open(path, 'w');
+
+      existingFileHandle.close();
+    } catch (e) {
+      console.log(`${path} does not exist, unable to write ${content}`);
+    }
   }
 
   // commands
-  const CREATE_FILE = 'create a file'
+  const CREATE_FILE = 'create a file';
+  const DELETE_FILE = 'delete a file';
+  const RENAME_FILE = 'rename the file';
+  const ADD_TO_FILE = 'add to the file';
 
   // reads open file
   const commandFileHandler = await fs.open('./command.txt', 'r');
@@ -46,6 +78,25 @@ const fs = require('fs/promises');
           // .substring() method looks at a string, until it comes to a space
           const filePath = command.substring(CREATE_FILE.length + 1);
           createFile(filePath);
+        }
+
+        if (command.includes(DELETE_FILE)) {
+          const filePath = command.substring(DELETE_FILE.length + 1);
+          deleteFile(filePath);
+        }
+
+        if(command.includes(RENAME_FILE)) {
+          const idx = command.indexOf(' to ')
+          const oldFilePath = command.substring(RENAME_FILE.length + 1, idx);
+          const newFilePath = command.substring(idx + 4)
+          renameFile(oldFilePath, newFilePath)
+        }
+
+        if(command.includes(ADD_TO_FILE)) {
+          const idx = command.indexOf(' this ')
+          const filePath = command.substring(ADD_TO_FILE.length + 1, idx);
+          const content = command.substring(idx + 6)
+          addToFile(filePath, content);
         }
   })
 
