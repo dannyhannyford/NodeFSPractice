@@ -22,7 +22,8 @@ const fs = require('fs/promises');
 
       console.log(await commandFileHandler.stat());
       const content = await commandFileHandler.read(buff, offset, length, position);
-      console.log(content)
+      console.log(content);
+      console.log(content.buffer.toString('utf8'));
     }
   }
 })();
