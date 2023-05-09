@@ -18,6 +18,7 @@ const fs = require('fs/promises');
 
   const deleteFile = async (path) => {
     try {
+      // either unlink or rm
       const deleteFileHandle = await fs.unlink(path);
       console.log(`deleting ${path}...`);
       deleteFileHandle.close();
@@ -28,22 +29,34 @@ const fs = require('fs/promises');
 
   const renameFile = async (oldPath, newPath) => {
     try {
-      console.log(`renamed ${oldPath} to ${newPath}`)
-      const existingFileHandle = await fs.rename(oldPath, newPath);
-      existingFileHandle.close();
-      console.log('fileHandlerClosed')
+       await fs.rename(oldPath, newPath);
+      console.log('file successfully renamed')
     } catch (e) {
-      console.log('we dont have a file, nothing to rename')
+      if(e.code === "ENOENT") {
+        console.log('we dont have a file, nothing to rename')
+      } else {
+        console.log(`An error occured while removing the file: ${e}`);
+      }
     }
   }
 
+  let addedContent;
   const addToFile = async (path, content) => {
+    // prevent double add
+    if(addedContent = content) return;
     try {
-      const existingFileHandle = await fs.open(path, 'w');
-      existingFileHandle.writeFile(content)
-      existingFileHandle.close();
+      // w flag overwrites the file
+      // can also use appendFile method
+      const fileHandle = await fs.open(path, 'a');
+      fileHandle.write(content)
+      addedContent = content;
+      fileHandle.close();
+      console.log('the content was added sucessfully')
     } catch (e) {
-      console.log(`${path} does not exist, unable to write ${content}`);
+      if(e.code === 'EONENT') {
+        console.log(`an error occured writing the the file: ${e}`);
+      }
+
     }
   }
 
