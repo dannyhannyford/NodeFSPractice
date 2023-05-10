@@ -12,23 +12,31 @@ const fs = require('fs/promises');
 
   const stream = fileHandle.createWriteStream();
 
-  console.log(stream.writableBuffer)
-  console.log(stream.writableHighWaterMark)
+  console.log('writableBuffer:', stream.writableBuffer)
+  console.log('writableLHighWaterMark', stream.writableHighWaterMark)
+  console.log('writableLength', stream.writableLength)
+  // stream.write(buffer)returns false if internal buffer is full
+  // never write more than your internal buffer size
+  // check for stream.writableLength < 16384
 
-  const buff = buffer.from('string');
+  stream.on('drain', () => {
+    console.log(stream.write(Buffer.alloc(1,'a')));
+    console.log(stream.writableLength)
+    console.log('safe to write more')
+  })
   
-  stream.write(buff)
-
-  console.log(stream.writableLength)
-
-  for (let i = 0; i < 1000000; i++) {
+  let i = 0;
+  while(i < 1000000) {
     const buff = Buffer.from (` ${i} `, 'utf-8');
-
-    console.log(stream.writableBuffer)
-    console.log(stream.writableHighWaterMark)
+  
+    if(!stream.write(buff)) break;
+    
     stream.write(buff);
+    i++;
   }
+
   console.timeEnd('writeMany');
+  fileHandle.close()
 })();
 
 
