@@ -19,21 +19,27 @@ const fs = require('fs/promises');
   // never write more than your internal buffer size
   // check for stream.writableLength < 16384
 
-  stream.on('drain', () => {
-    console.log(stream.write(Buffer.alloc(1,'a')));
-    console.log(stream.writableLength)
-    console.log('safe to write more')
-  })
+
   
   let i = 0;
-  while(i < 1000000) {
-    const buff = Buffer.from (` ${i} `, 'utf-8');
-  
-    if(!stream.write(buff)) break;
+
+  const writeMany = () => {
+    while(i < 1000000) {
+      const buff = Buffer.from (` ${i} `, 'utf-8');
     
-    stream.write(buff);
-    i++;
-  }
+      if(!stream.write(buff)) break;
+  
+      stream.write(buff);
+      i++;
+    }
+  };
+
+  writeMany();
+
+  stream.on('drain', () => {
+    writeMany();
+  })
+ 
 
   console.timeEnd('writeMany');
   fileHandle.close()
