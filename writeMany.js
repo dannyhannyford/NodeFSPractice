@@ -2,9 +2,9 @@
 const fs = require('fs/promises');
 
 /**
- * Execution Time: 
+ * Execution Time: 438ms
  * CPU Usage: 
- * Memory Usage:
+ * Memory Usage: 55MB
  */
 (async () => {
   console.time('writeMany');
@@ -13,20 +13,24 @@ const fs = require('fs/promises');
   const stream = fileHandle.createWriteStream();
 
   console.log('writableBuffer:', stream.writableBuffer)
-  console.log('writableLHighWaterMark', stream.writableHighWaterMark)
-  console.log('writableLength', stream.writableLength)
+  console.log('writableLHighWaterMark:', stream.writableHighWaterMark)
+  console.log('writableLength:', stream.writableLength)
   // stream.write(buffer)returns false if internal buffer is full
   // never write more than your internal buffer size
   // check for stream.writableLength < 16384
 
-
-  
   let i = 0;
 
   const writeMany = () => {
     while(i < 1000000) {
       const buff = Buffer.from (` ${i} `, 'utf-8');
-    
+      // last write
+      if (i === 999999) {
+        // emits a finish event, writes the last buffer
+        return stream.end(buff);
+      }
+
+      // stop loop if buffer is full and this return false
       if(!stream.write(buff)) break;
   
       stream.write(buff);
@@ -34,15 +38,19 @@ const fs = require('fs/promises');
     }
   };
 
-  writeMany();
-
+  // resuming loop once stream's internal buffer is empty
   stream.on('drain', () => {
+    console.log('drained');
     writeMany();
   })
- 
+  
+  stream.on('finish', () => {
+    console.timeEnd('writeMany');
+    fileHandle.close()
+  })
 
-  console.timeEnd('writeMany');
-  fileHandle.close()
+  writeMany();
+  
 })();
 
 
